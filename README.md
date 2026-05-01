@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# 🧠 DocuMind — AI-Powered Document Q&A Engine
 
-First, run the development server:
+**Upload any PDF → Ask any question → Get grounded answers with sources cited**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🎯 About The Project
+
+**DocuMind** is a full-stack Retrieval-Augmented Generation (RAG) application that lets users upload PDF documents and ask natural language questions about them.
+
+The project demonstrates a complete RAG pipeline from scratch — document ingestion, vector embeddings, semantic search, and LLM-powered response generation — built entirely with **free-tier tools** (zero cloud cost).
+
+**Why I built this:** To demonstrate end-to-end AI engineering skills across the full RAG stack — not just calling an OpenAI wrapper, but implementing chunking strategy, vector similarity search, prompt engineering, and a production-quality UI.
+
+---
+
+## 🏗️ RAG Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    INDEXING PIPELINE                        │
+│                   (happens on upload)                       │
+│                                                             │
+│  PDF File ──► pdf-parse ──► Text Extraction                 │
+│                                  │                          │
+│                                  ▼                          │
+│                         chunker.ts splits                   │
+│                      1000 chars / 200 overlap               │
+│                                  │                          │
+│                                  ▼                          │
+│                       embeddings.ts converts                │
+│                      each chunk → 384-dim vector            │
+│                                  │                          │
+│                                  ▼                          │
+│                   Supabase stores { content, embedding }    │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                    QUERYING PIPELINE                        │
+│                  (happens on each question)                 │
+│                                                             │
+│  User Question ──► embed question ──► 384-dim vector        │
+│                                           │                 │
+│                                           ▼                 │
+│                          cosine similarity search           │
+│                        over all stored embeddings           │
+│                                           │                 │
+│                                           ▼                 │
+│                         Top 5 most relevant chunks          │
+│                                           │                 │
+│                                           ▼                 │
+│              RAG Prompt: "Answer ONLY from this context"    │
+│                                           │                 │
+│                                           ▼                 │
+│                    Groq LLaMA 3 (llama3-8b-8192)            │
+│                                           │                 │
+│                                           ▼                 │
+│                      Answer + Sources returned to UI        │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Layer | Technology | Why |
+|-------|-----------|-----|
+| **Frontend** | Next.js 14 (App Router) | Server components, API routes in one framework |
+| **Language** | TypeScript | Type safety across the full stack |
+| **Styling** | Tailwind CSS | Utility-first, fast to build |
+| **LLM** | Groq API (LLaMA 3 8B) | Fastest free inference — 10x faster than OpenAI free tier |
+| **Vector DB** | Supabase + pgvector | Collocated with relational data, no extra service needed |
+| **Embeddings** | Custom hash-based (384-dim) | Zero cost, no API key — swappable with Cohere/OpenAI |
+| **PDF Parsing** | pdf-parse | Lightweight, runs server-side |
+| **Deployment** | Vercel | Git push → live in 2 minutes |
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## 📁 Folder Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+documind/
+│
+├── app/                          # Next.js App Router
+│   ├── layout.tsx                # Root layout (fonts, metadata)
+│   ├── globals.css               # Global styles + animations
+│   ├── page.tsx                  # Home page with pipeline overview
+│   │
+│   ├── upload/
+│   │   └── page.tsx              # PDF upload UI with live progress steps
+│   │
+│   ├── chat/
+│   │   └── page.tsx              # Chat interface with sources panel
+│   │
+│   └── api/
+│       ├── upload/
+│       │   └── route.ts          # POST — PDF → chunks → embed → store
+│       ├── query/
+│       │   └── route.ts          # POST — question → retrieve → LLM → answer
+│       └── documents/
+│           └── route.ts          # GET list / DELETE document
+│
+├── lib/
+│   ├── supabase.ts               # Supabase client (anon + service role)
+│   ├── embeddings.ts             # Vector generation + cosine similarity
+│   ├── chunker.ts                # Text splitter (size + overlap strategy)
+│   └── groq.ts                   # Groq client + RAG prompt builder
+│
+├── types/
+│   └── index.ts                  # Shared TypeScript interfaces
+│
+├── supabase-setup.sql            # One-time DB setup — run in SQL Editor
+├── .env.local                    # API keys (never commit!)
+├── .env.example                  # Safe template to share
+├── next.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+└── package.json
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+VERCEL: 
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`https://documind-xxx.vercel.app`
