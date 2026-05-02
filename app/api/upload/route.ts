@@ -18,8 +18,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only PDF files are supported' }, { status: 400 });
     }
 
+    // const buffer = Buffer.from(await file.arrayBuffer());
+    // const pdf = await pdfParse(buffer);
     const buffer = Buffer.from(await file.arrayBuffer());
-    const pdf = await pdfParse(buffer);
+    const pdf = await pdfParse(buffer, { max: 0 });
 
     if (!pdf.text?.trim()) {
       return NextResponse.json({ error: 'No text found in PDF' }, { status: 400 });

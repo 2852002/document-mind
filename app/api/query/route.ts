@@ -13,7 +13,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Embed the question
+    // const queryEmbedding = await getEmbedding(question);
     const queryEmbedding = await getEmbedding(question);
+console.log('[query] embedding length:', queryEmbedding.length);
+console.log('[query] sample:', queryEmbedding.slice(0, 3));
 
     // Find relevant chunks
     const chunks = await similaritySearch(queryEmbedding, 5);
