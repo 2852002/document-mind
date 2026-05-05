@@ -1,4 +1,7 @@
 
+VERCEL APP LINK: 
+`https://document-mind-livid.vercel.app/`
+
 # 🧠 DocuMind — AI-Powered Document Q&A Engine
 
 **Upload any PDF → Ask any question → Get grounded answers with sources cited**
@@ -116,6 +119,3 @@ documind/
 └── package.json
 ```
 
-VERCEL: 
-
-`https://documind-xxx.vercel.app`
