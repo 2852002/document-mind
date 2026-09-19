@@ -44,7 +44,7 @@ console.log('[query] sample:', queryEmbedding.slice(0, 3));
     // Call Groq
     const llm = new ChatGroq({
       apiKey: process.env.GROQ_API_KEY,
-      model: 'llama-3.3-70b-versatile',
+      model: 'llama3-8b-8192',
       temperature: 0.1,
       maxTokens: 1024,
     });
